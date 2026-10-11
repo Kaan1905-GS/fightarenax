@@ -5,6 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FightArenaX">
+<meta name="theme-color" content="#0b0a1a">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
 <title>FightArenaX</title>
 <style>
   :root { color-scheme: dark; --bg: #0e0b24; --card: #1a1640; --line: #3a3470; --ink: #f4f1ff; --dim: #aaa3d8; --gold: #ffd23f; --hot: #ff6a2b; --bad: #ff6b6b; }
@@ -24,6 +30,10 @@
   button:disabled { opacity: .6; cursor: wait; }
   .msg { min-height: 1.4em; font-size: 14px; color: var(--bad); }
   .msg.ok { color: var(--dim); }
+  .home { display: none; gap: 6px; font-size: 14px; line-height: 1.4; background: rgba(111,240,192,.1); border: 1px solid rgba(111,240,192,.4); border-radius: 12px; padding: 12px; color: var(--ink); }
+  .home.on { display: grid; }
+  .home b { color: #6ff0c0; }
+  .home ol { margin: 0; padding-left: 20px; }
 </style>
 </head>
 <body>
@@ -34,10 +44,11 @@
   <label class="rem"><input type="checkbox" id="rem" checked> Auf diesem Gerät merken</label>
   <button type="submit" id="go">Spielen</button>
   <div class="msg" id="msg" role="status" aria-live="polite"></div>
+  <div class="home" id="home"><b>Tipp: Vollbild ohne Safari-Leiste</b><ol><li>Unten auf <b>Teilen</b> tippen (Quadrat mit Pfeil)</li><li><b>„Zum Home-Bildschirm“</b> wählen</li><li>FightArenaX über das neue App-Symbol starten</li></ol></div>
 </form>
 <script>
 (() => {
-  const SALT = 'sziU9l5LkDqbCOtSu0hEnw==', ITER = 210000, VER = '0076564c66';
+  const SALT = 'sziU9l5LkDqbCOtSu0hEnw==', ITER = 210000, VER = '03ea01d71b';
   const $ = id => document.getElementById(id), msg = $('msg'), btn = $('go');
   const b64 = u => btoa(String.fromCharCode(...new Uint8Array(u)));
   const unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
@@ -55,6 +66,9 @@
     const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveBits']);
     return crypto.subtle.deriveBits({ name: 'PBKDF2', salt: unb64(SALT), iterations: ITER, hash: 'SHA-256' }, base, 256);
   }
+  const ios = /iP(hone|od|ad)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const standalone = navigator.standalone === true || matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches;
+  if (ios && !standalone) $('home').classList.add('on');
   if (!window.crypto || !crypto.subtle) { msg.textContent = 'Dein Browser unterstützt die Entschlüsselung nicht. Bitte Safari oder Chrome aktuell verwenden.'; btn.disabled = true; return; }
   // remembered on this device: unlock straight away
   let saved = null; try { saved = localStorage.getItem('faxk'); } catch (e) { saved = null; }
